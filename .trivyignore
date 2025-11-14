@@ -1,0 +1,7 @@
+AVD-KSV-0125 #Ignore ghcr as untrusted registry
+AVD-KSV-0011 #Should not set cpu.limit
+
+# TODO : Ignore cpu.request, memory.request and memory.limit for now
+AVD-KSV-0018
+AVD-KSV-0015
+AVD-KSV-0016

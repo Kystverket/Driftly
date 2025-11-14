@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: fyr-dev
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: Namespace
+  description: team fyr
+  destinations:
+    - name: '*'
+      namespace: fyr-dev-*
+      server: '*'
+    - name: '*'
+      namespace: fyr-kargo
+      server: '*'
+    - name: '*'
+      namespace: aks-istio-ingress
+      server: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - groups:
+        - aaaaa-bbbbb-cccc
+      name: dev
+      policies:
+        - p, proj:fyr-dev:dev, applications, get, fyr-dev/*, allow
+        - p, proj:fyr-dev:dev, logs, get, fyr-dev/*, allow
+    - groups:
+        - aaaaa-bbbbb-cccc
+      name: admin
+      policies:
+        - p, proj:fyr-dev:admin, applications, get, fyr-dev/*, allow
+        - p, proj:fyr-dev:admin, logs, get, fyr-dev/*, allow
+  sourceRepos:
+    - https://github.com/kystverket/*
+    - git@github.com:kystverket/*

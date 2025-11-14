@@ -1,0 +1,11 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: fyr-kargo
+  namespace: fyr-kargo
+spec:
+  promotionPolicies:
+    - stageSelector:
+        matchLabels:
+          stage: dev
+      autoPromotionEnabled: true

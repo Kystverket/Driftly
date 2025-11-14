@@ -1,0 +1,29 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: myapp
+  namespace: fyr-dev-example
+  labels:
+    service: example
+    app: myapp
+    env: dev
+    team: fyr
+spec:
+  hostnames:
+    - myapp.dev.corp.cloud
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: gateway
+      namespace: aks-istio-ingress
+      sectionName: https
+  rules:
+    - backendRefs:
+        - group: ""
+          name: myapp
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

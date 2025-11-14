@@ -1,0 +1,13 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: example-escape
+  namespace: fyr-kargo
+spec:
+  interval: 5m0s
+  subscriptions:
+    - image:
+        allowTags: ^ts-\d{6}-\d{4}
+        imageSelectionStrategy: Lexical
+        repoURL: ghcr.io/kystverket/example/escape
+        strictSemvers: true

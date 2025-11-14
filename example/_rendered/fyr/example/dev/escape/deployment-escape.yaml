@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: example
+    app: escape
+    env: dev
+    team: fyr
+  name: escape
+  namespace: fyr-dev-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: example
+      app: escape
+      env: dev
+      team: fyr
+  template:
+    metadata:
+      labels:
+        service: example
+        app: escape
+        env: dev
+        team: fyr
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  service: example
+                  app: escape
+                  env: dev
+                  team: fyr
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - image: ghcr.io/kystverket/example/escape:replacedbyargocmp
+          imagePullPolicy: Always
+          name: escape
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              ephemeral-storage: 64Mi
+            requests:
+              ephemeral-storage: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 10002
+            runAsNonRoot: true
+            runAsUser: 10002
+            seccompProfile:
+              type: RuntimeDefault
+      imagePullSecrets:
+        - name: corp-pull
+      securityContext:
+        fsGroup: 10002
+        runAsGroup: 10002
+        runAsNonRoot: true
+        runAsUser: 10002

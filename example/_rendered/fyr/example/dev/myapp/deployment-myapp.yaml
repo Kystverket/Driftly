@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: example
+    app: myapp
+    env: dev
+    team: fyr
+  name: myapp
+  namespace: fyr-dev-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: example
+      app: myapp
+      env: dev
+      team: fyr
+  template:
+    metadata:
+      labels:
+        service: example
+        app: myapp
+        env: dev
+        team: fyr
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  service: example
+                  app: myapp
+                  env: dev
+                  team: fyr
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - command:
+            - /app/enstrypiont.sh
+          env:
+            - name: extra
+              value: extraEnv
+            - name: BASE
+              value: VALUE
+          image: ghcr.io/kystverket/example/myapp:replacedbyargocmp
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /isalive
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 1
+          name: myapp
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /isready
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 1
+          resources:
+            limits:
+              ephemeral-storage: 64Mi
+            requests:
+              ephemeral-storage: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 10002
+            runAsNonRoot: true
+            runAsUser: 10002
+            seccompProfile:
+              type: RuntimeDefault
+      imagePullSecrets:
+        - name: corp-pull
+      securityContext:
+        fsGroup: 10002
+        runAsGroup: 10002
+        runAsNonRoot: true
+        runAsUser: 10002

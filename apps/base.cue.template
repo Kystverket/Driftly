@@ -1,0 +1,18 @@
+package apps
+
+import schema "github.com/kystverket/driftly/schema"
+
+#APP: schema.#AppSchema & {
+	config: {
+		service: "SERVICE"
+		app:     "APP"
+		team:    "TEAM"
+	}
+}
+
+"APP": schema.#App & {
+	dev:  #APP
+	test: #APP
+	prod: #APP
+}
+

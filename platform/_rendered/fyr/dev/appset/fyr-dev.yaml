@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: fyr-dev
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        directories:
+          - path: apps/_rendered/fyr/**/dev/*
+        repoURL: git@github.com:kystverket/driftly.git
+        revision: HEAD
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  template:
+    metadata:
+      annotations:
+        argocd.argoproj.io/manifest-generate-paths: .
+      labels:
+        team: fyr
+      name: '{{index .path.segments 2}}-{{index .path.segments 4}}-{{index .path.segments 3}}-{{index .path.segments 5}}'
+    spec:
+      destination:
+        namespace: '{{index .path.segments 2}}-{{index .path.segments 4}}-{{index .path.segments 3}}'
+        server: https://kubernetes.default.svc
+      ignoreDifferences:
+        - group: ""
+          jsonPointers:
+            - /metadata/annotations
+            - /metadata/labels
+          kind: ServiceAccount
+        - group: ""
+          jsonPointers:
+            - /data
+          kind: Secret
+          name: corp-pull
+      project: fyr-dev
+      source:
+        path: '{{.path.path}}'
+        plugin:
+          env:
+            - name: IMAGE
+              value: '{{index .path.segments 2}}/{{index .path.segments 4}}/{{index .path.segments 3}}/{{index .path.segments 5}}'
+          name: kargo-cmp
+        repoURL: git@github.com:kystverket/driftly.git
+        targetRevision: HEAD
+      syncPolicy:
+        automated:
+          enabled: true
+          prune: true
+          selfHeal: true
+        managedNamespaceMetadata:
+          labels:
+            component: platform-apps
+            team: fyr
+        syncOptions:
+          - CreateNamespace=true

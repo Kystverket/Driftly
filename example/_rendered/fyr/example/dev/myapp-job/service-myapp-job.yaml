@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: example
+    app: myapp-job
+    env: dev
+    team: fyr
+  name: myapp-job
+  namespace: fyr-dev-example
+spec:
+  ports:
+    - name: http-myapp-job
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    service: example
+    app: myapp-job
+    env: dev
+    team: fyr
+  type: ClusterIP

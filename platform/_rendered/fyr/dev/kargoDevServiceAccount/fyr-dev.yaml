@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fyr-dev
+  namespace: fyr-kargo
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    kargo.akuity.io/description: Dev team access via Entra ID
+    rbac.kargo.akuity.io/claims: '{"groups":["aaaaa-bbbbb-cccc"]}'
