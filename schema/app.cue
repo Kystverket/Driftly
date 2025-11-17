@@ -17,7 +17,7 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 	// Base configuration for application 
 	config: {
 		// Team responsible for the application
-		team!: "enav" | "dataplattform" | "fyr" | "kystinn" | "platform"
+		team!: "teamFOO" | "teamBAR" | "fyr"
 		// Deployment environment
 		env!: "dev" | "test" | "prod"
 		// Service (usually git repo)
