@@ -141,6 +141,7 @@ good enough, even though looping in cue like this does not feel very elegant.
   unification model might work against you.
 - Rendered manifest pattern does not play well with kargo (see opinonated setup)
 - CUE openAPI / docs generation should work, but has bugs with this setup
+- With great power; Escape hatches lets you specify any yaml outside the schema, so you might still need OPA / Kyverno to catch `allowPrivilegeEscalation: true` type issues. Or some CUE way to run validation on dynamic content.
 
 ## Opinionated setup
 
@@ -182,13 +183,13 @@ CDK8s - Great if every user and maintainer are competent developers, but too fle
 In our opinion, a good configuration management tool should:
 
 - Be opinionated through heavy defaulting
-- Have strong type safety and constraints, reducing dependancies on policy engines (shift left)
+- Have strong type safety and constraints, reducing dependency on policy engines (shift left)
 - Have native kubernetes CRD integration (you can still push wrong values, but never wrong schemas)
 - Have good tooling; LSP, auto format, and more
 - Support Good workflows around refactoring; configuration should stay dynamic to changing requirements
 - Ideally not be a kubernetes only tool, but should speak
   [any schema](https://cue.dev/getting-started/schema-library/) fluently
-- Support [escape hatces](./example/escape-hatches.cue) for when (not if) your defaults are wrong
+- Support [escape hatches](./example/escape-hatches.cue) for when (not if) your defaults are wrong
 
 What CUE lacks now are more real world usage examples,
 and this repo aims to provide just that.
