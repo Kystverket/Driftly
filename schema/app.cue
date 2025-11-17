@@ -74,7 +74,7 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 				{host!: string},
 				{hostPattern!: string},
 				{port!: string},
-			]) | error("At least two of fields in OutboundAccess must be defined")
+			]) | error("At least one of 'host' or 'hostPattern' must be specified")
 		}]
 
 		replicas: {
