@@ -187,9 +187,9 @@ In our opinion, a good configuration management tool should:
 - Have native kubernetes CRD integration (you can still push wrong values, but never wrong schemas)
 - Have good tooling; LSP, auto format, and more
 - Support Good workflows around refactoring; configuration should stay dynamic to changing requirements
+- Support [escape hatches](./example/escape-hatches.cue) for when (not if) your defaults are wrong
 - Ideally not be a kubernetes only tool, but should speak
   [any schema](https://cue.dev/getting-started/schema-library/) fluently
-- Support [escape hatches](./example/escape-hatches.cue) for when (not if) your defaults are wrong
 
 What CUE lacks now are more real world usage examples,
 and this repo aims to provide just that.
