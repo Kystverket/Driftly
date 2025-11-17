@@ -5,7 +5,7 @@ import schema "github.com/kystverket/driftly/schema"
 import "encoding/yaml"
 
 #EscapeExample: schema.#AppSchema & {
-	//let C = config
+	let C = config
 	config: {
 		service: "example"
 		team:    "fyr"
@@ -17,24 +17,26 @@ import "encoding/yaml"
 	}]
 	//Raw yaml certificate resource
 	configMap: yaml.Unmarshal(_data)
-	_data: """
-		   apiVersion: cert-manager.io/v1
-		   kind: Certificate
-		   metadata:
-		     name: example
-		   spec:
-		     dnsNames:
-		     - example.fyr.svc
-		     issuerRef:
-		       kind: Issuer
-		       name: example-issuer
-		     secretName: example-tls
-		"""
+	_data:     """
+       apiVersion: cert-manager.io/v1
+       kind: Certificate
+       metadata:
+         name: example
+         namespace: \(C.team+"-"+C.env+"-"+C.service)
+       spec:
+         dnsNames:
+         - example.fyr.svc
+         issuerRef:
+           kind: Issuer
+           name: example-issuer
+         secretName: example-tls
+    """
 	// Same cert but in cue
 	cueCert: {
 		apiVersion: "cert-manager.io/v1"
 		kind:       "Certificate"
-		metadata: name: "example-cue"
+		metadata: name:      "example-cue"
+		metadata: namespace: C.team + "-" + C.env + "-" + C.service
 		spec: {
 			dnsNames: ["example.fyr.svc"]
 			issuerRef: {

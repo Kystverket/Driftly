@@ -2,6 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example-cue
+  namespace: fyr-dev-example
 spec:
   dnsNames:
     - example.fyr.svc
