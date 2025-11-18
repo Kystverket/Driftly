@@ -237,7 +237,6 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 				}
 				spec: {
 					action: "DENY"
-					provider: name: "oauth2-proxy"
 					rules: [{
 						to: [{
 							operation: hosts: [C.ingress.hostname + "/*"]
