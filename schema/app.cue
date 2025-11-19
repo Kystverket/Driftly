@@ -366,8 +366,6 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 	// Inbound access from other apps
 	if C.inboundAccess != _|_ {
 		ciliumInboundPolicy: cilium.#CiliumNetworkPolicy & {
-			apiVersion: "cilium.io/v2"
-			kind:       "CiliumNetworkPolicy"
 			metadata: {
 				name:      "inbound-" + C.app + "-" + C.env
 				namespace: #Base.Metadata.namespace
@@ -404,8 +402,6 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 	// Outbound access
 	if C.outboundAccess != _|_ {
 		ciliumOutboundPolicy: cilium.#CiliumNetworkPolicy & {
-			apiVersion: "cilium.io/v2"
-			kind:       "CiliumNetworkPolicy"
 			metadata: {
 				name:      "outbund-" + C.app + "-" + C.env
 				namespace: #Base.Metadata.namespace
