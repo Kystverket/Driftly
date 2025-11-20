@@ -106,10 +106,17 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 			...
 		}
 
+		otelAnnotations: {
+			"resource.opentelemetry.io/service.namespace":           C.service
+			"resource.opentelemetry.io/service.name":                C.app
+			"resource.opentelemetry.io/deployment.environment.name": C.env
+		}
+
 		Metadata: {
-			name:      C.app
-			namespace: C.team + "-" + C.env + "-" + C.service
-			labels:    Labels
+			name:        C.app
+			namespace:   C.team + "-" + C.env + "-" + C.service
+			labels:      Labels
+			annotations: otelAnnotations
 			...
 		}
 

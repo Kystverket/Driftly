@@ -8,6 +8,10 @@ metadata:
     app: myapp
     env: test
     team: fyr
+  annotations:
+    resource.opentelemetry.io/service.namespace: example
+    resource.opentelemetry.io/service.name: myapp
+    resource.opentelemetry.io/deployment.environment.name: test
 spec:
   hostnames:
     - myapp.test.corp.cloud

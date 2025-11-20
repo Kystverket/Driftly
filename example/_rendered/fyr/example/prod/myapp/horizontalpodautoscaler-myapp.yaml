@@ -1,6 +1,10 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
+  annotations:
+    resource.opentelemetry.io/service.namespace: example
+    resource.opentelemetry.io/service.name: myapp
+    resource.opentelemetry.io/deployment.environment.name: prod
   labels:
     service: example
     app: myapp
