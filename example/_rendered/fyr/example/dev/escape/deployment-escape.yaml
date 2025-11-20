@@ -1,10 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    resource.opentelemetry.io/service.namespace: example
-    resource.opentelemetry.io/service.name: escape
-    resource.opentelemetry.io/deployment.environment.name: dev
   labels:
     service: example
     app: escape

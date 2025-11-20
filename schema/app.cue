@@ -106,17 +106,10 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 			...
 		}
 
-		otelAnnotations: {
-			"resource.opentelemetry.io/service.namespace":           C.service
-			"resource.opentelemetry.io/service.name":                C.app
-			"resource.opentelemetry.io/deployment.environment.name": C.env
-		}
-
 		Metadata: {
-			name:        C.app
-			namespace:   C.team + "-" + C.env + "-" + C.service
-			labels:      Labels
-			annotations: otelAnnotations
+			name:      C.app
+			namespace: C.team + "-" + C.env + "-" + C.service
+			labels:    Labels
 			...
 		}
 
@@ -342,16 +335,12 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 	}
 	if C.instrumentation != _|_ {
 		#Base: PodTemplate: {
-			metadata: annotations: "instrumentation.opentelemetry.io/inject-\(C.instrumentation)": "true"
-			spec: containers: [{
-				env: [{
-					name:  "OTEL_EXPORTER_OTLP_ENDPOINT"
-					value: "http://otel-collector.\(#Organization.observability.namespace):4317"
-				}, {
-					name:  "OTEL_RESOURCE_ATTRIBUTES"
-					value: "deployment.environment.name=\(C.env),service.name=\(C.app),service.namespace=\(C.service)"
-				}]
-			}]
+			metadata: annotations: {
+				"instrumentation.opentelemetry.io/inject-\(C.instrumentation)": "true"
+				"resource.opentelemetry.io/service.namespace":                  C.service
+				"resource.opentelemetry.io/service.name":                       C.app
+				"resource.opentelemetry.io/deployment.environment.name":        C.env
+			}
 		}
 	}
 	kargo?: #kargo

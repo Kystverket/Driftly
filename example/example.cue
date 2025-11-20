@@ -15,6 +15,7 @@ import schema "github.com/kystverket/driftly/schema"
 		}
 		command: ["/app/enstrypiont.sh"]
 
+		instrumentation: "go"
 		replicas: {
 			min:                    1
 			max:                    5

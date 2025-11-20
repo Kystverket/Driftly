@@ -1,10 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    resource.opentelemetry.io/service.namespace: example
-    resource.opentelemetry.io/service.name: myapp
-    resource.opentelemetry.io/deployment.environment.name: dev
   labels:
     service: example
     app: myapp
@@ -22,6 +18,11 @@ spec:
       team: fyr
   template:
     metadata:
+      annotations:
+        resource.opentelemetry.io/service.namespace: example
+        resource.opentelemetry.io/service.name: myapp
+        resource.opentelemetry.io/deployment.environment.name: dev
+        instrumentation.opentelemetry.io/inject-go: "true"
       labels:
         service: example
         app: myapp
