@@ -166,7 +166,7 @@ func renderResults(outputDir string) {
 				continue
 			}
 
-			fmt.Printf("Created: %s\n", filename)
+			// fmt.Printf("Created: %s\n", filename)
 		}
 	}
 }

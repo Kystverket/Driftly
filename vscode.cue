@@ -1,0 +1,45 @@
+package driftly
+
+import schema "github.com/kystverket/driftly/schema"
+
+tasks: {
+	version: "2.0.0"
+	tasks: [{
+		label:   "New App"
+		type:    "shell"
+		command: "just new-app ${input:01-team} ${input:02-repo} ${input:03-app} && code apps/${input:01-team}/${input:02-repo}-${input:03-app}.cue"
+		presentation: {
+			panel:  "dedicated"
+			reveal: "always"
+			clear:  true
+		}
+		problemMatcher: []
+	}, {
+		label:        "Watch CUE"
+		type:         "shell"
+		command:      "apk add --no-cache entr 2>/dev/null; while true; do find apps/ -name '*.cue' | entr -cd sh -c 'echo \"=== render ===\"; just render'; done"
+		isBackground: true
+		presentation: {
+			panel:  "dedicated"
+			reveal: "always"
+			group:  "cue"
+			clear:  true
+		}
+		runOptions: runOn: "folderOpen"
+		problemMatcher: []
+	}]
+	inputs: [{
+		id:          "01-team"
+		type:        "pickString"
+		description: "Team"
+		options: [for t in schema.#Organization.teams {t.name}]
+	}, {
+		id:          "02-repo"
+		type:        "promptString"
+		description: "Repository name"
+	}, {
+		id:          "03-app"
+		type:        "promptString"
+		description: "Container name"
+	}]
+}

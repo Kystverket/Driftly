@@ -1,0 +1,20 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: full-entraid
+  namespace: aks-istio-ingress
+  labels:
+    service: repo
+    app: full
+    env: test
+    team: fyr
+spec:
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  rules:
+    - to:
+        - operation:
+            hosts:
+              - fullexample.test.corp.cloud/*
+              - fullexample.test.corp.cloud

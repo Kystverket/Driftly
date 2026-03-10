@@ -1,0 +1,21 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: full-whitelist
+  namespace: aks-istio-ingress
+  labels:
+    service: repo
+    app: full
+    env: dev
+    team: fyr
+spec:
+  action: DENY
+  rules:
+    - from:
+        - source:
+            notRemoteIpBlocks:
+              - 10.100.100.10/32
+      to:
+        - operation:
+            hosts:
+              - fullexample.dev.corp.cloud

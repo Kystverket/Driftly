@@ -36,15 +36,15 @@ spec:
           kind: Secret
           name: corp-pull
       project: fyr-test
-      source:
-        path: '{{.path.path}}'
-        plugin:
-          env:
-            - name: IMAGE
-              value: '{{index .path.segments 2}}/{{index .path.segments 4}}/{{index .path.segments 3}}/{{index .path.segments 5}}'
-          name: kargo-cmp
-        repoURL: git@github.com:kystverket/driftly.git
-        targetRevision: HEAD
+      sources:
+        - path: '{{.path.path}}'
+          plugin:
+            env:
+              - name: IMAGE
+                value: '{{index .path.segments 2}}/{{index .path.segments 4}}/{{index .path.segments 3}}/{{index .path.segments 5}}'
+            name: kargo-cmp
+          repoURL: git@github.com:kystverket/driftly.git
+          targetRevision: HEAD
       syncPolicy:
         automated:
           enabled: true

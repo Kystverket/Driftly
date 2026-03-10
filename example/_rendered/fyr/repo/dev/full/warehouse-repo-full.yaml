@@ -1,0 +1,13 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: repo-full
+  namespace: fyr-kargo
+spec:
+  interval: 5m0s
+  subscriptions:
+    - image:
+        allowTags: ^ts-\d{6}-\d{4}
+        imageSelectionStrategy: Lexical
+        repoURL: ghcr.io/kystverket/repo/example-frontend
+        strictSemvers: true

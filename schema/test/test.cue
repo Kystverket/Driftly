@@ -22,16 +22,47 @@ import schema "github.com/kystverket/driftly/schema"
 		managedIdentity: true
 
 		envVars: {}
-		envFrom: [{
-			configMapRef: {
-				name: "configmap"
+		envFrom: {
+			foo: {
+				configMapRef: {
+					name: "configmap"
+				}
 			}
-		}]
+			bar: {
+				secretRef: {
+					name: "test"
+				}
+			}
+		}
 		replicas: {
 			min: 1
 		}
-		ingress: {}
+		ingress: {
+			entraID: true
+			cidr: [
+				{"10.0.0.0/32"},
+				{"10.0.0.0/24"},
+			]
+		}
+		// Cilium access policies
+		// accessPolicy: {
+		// 	inbound: [{
+		// 		// Should specify access from other application
+		// 		rules: [{
+		// 			service: "fyrlykt"
+		// 			app:     "frontend"
+		// 		}]
+		// 	}]
+		// 	inbound: [{
+		// 		// Should specify access from other application
+		// 		rules: [{
+		// 			host: "vg.no"
+		// 			app:  "frontend"
+		// 		}]
+		// 	}]
+		// }
 		inboundAccess: [{
+			team:    "fyr"
 			service: "fyrlykt"
 			app:     "frontend"
 			env:     "dev"

@@ -4,12 +4,12 @@ default:
 
 # Create a new application
 [working-directory: "apps"]
-new-app NAME TEAM REPO:
-  cp base.cue.template {{NAME}}.cue
-  sed -i  's/APP/{{NAME}}/g' {{NAME}}.cue
-  sed -i  's/TEAM/{{TEAM}}/g' {{NAME}}.cue
-  sed -i  's/SERVICE/{{REPO}}/g' {{NAME}}.cue
-  sed -i  's/#{{NAME}}/#{{replace(NAME, "-", "_")}}/g' {{NAME}}.cue
+new-app TEAM REPO NAME:
+  cp base.cue.template {{TEAM}}/{{REPO}}-{{NAME}}.cue
+  sed -i  's/APP/{{NAME}}/g' {{TEAM}}/{{REPO}}-{{NAME}}.cue
+  sed -i  's/TEAM/{{TEAM}}/g' {{TEAM}}/{{REPO}}-{{NAME}}.cue
+  sed -i  's/SERVICE/{{REPO}}/g' {{TEAM}}/{{REPO}}-{{NAME}}.cue
+  sed -i  's/#{{NAME}}/#{{replace(NAME, "-", "_")}}/g' {{TEAM}}/{{REPO}}-{{NAME}}.cue
 
 
 [working-directory: "platform"]
@@ -29,19 +29,22 @@ tidy:
 render-platform:
   cue cmd render
 
-# Render gitops manifests for applications
+render-tasks:
+  cue export -e tasks > .vscode/tasks.json
+
+# Render manifests for applications
 render DIR="apps":
   ## Can also run main.go directly
   #go run main.go --dir={{DIR}}
-  @./render --dir={{DIR}}
+  @./render_$(uname -m) --dir={{DIR}}
 
 # Dump yaml resources to terminal
 export DIR="apps": 
   @cue export --out yaml ./{{DIR}}
 
-# Build the render binary
+# Build the render binary for current system
 build:
-  go build -o render
+  CGO_ENABLED=0 go build -o render_$(uname -m) main.go
 
 # Remove cue code using cue trim
 trim:

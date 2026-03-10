@@ -14,6 +14,32 @@ CUEs unification model has shown to be a great fit for this, but for a deeper di
 
 ## Getting started
 
+### Devcontainer / codespaces
+
+This repo comes with ready-to-use devcontainer setup, containing dependencies and vscode extensions.
+
+- vscode  
+  ctrl + shift + p
+  `> dev containers: Open folder in Container...`
+- codespaces  
+  [![Open in codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=1058634976)
+
+A task will watch for changes in the `apps/` folder and output changes to `apps/_rendered` on save.  
+If the task does not run automatically:
+
+- ctrl + shift + p
+  `> tasks: Run task` -> `Watch CUE`
+
+Creating new apps is also available as tasks
+
+- ctrl + shift + p
+  `> tasks: Run task` -> `New app`
+
+Devcontainer comes with full LSP integration and go to definition support to help
+exploring the schema. (schema.**#AppSchema** -> go to definition)
+
+### Manual
+
 Use whatever you want, here's brew
 
 ```
@@ -86,7 +112,7 @@ Apps: TEAM: #Apps & {
 ## Creating a new app
 
 ```
-just new-app NAME TEAM REPO
+just new-app TEAM REPO APP
 just render
 ```
 
@@ -139,7 +165,7 @@ good enough, even though looping in cue like this does not feel very elegant.
 - Error messages can be extremely verbose
 - keep it simple and use simple primitives, otherwise the CUE
   unification model might work against you.
-- Rendered manifest pattern does not play well with kargo (see opinonated setup)
+- Rendered manifest pattern does not play well with kargo (see opinionated setup)
 - CUE openAPI / docs generation should work, but has bugs with this setup
 - With great power; Escape hatches lets you specify any yaml outside the schema, so you might still need OPA / Kyverno to catch `allowPrivilegeEscalation: true` type issues. Or some CUE way to run validation on dynamic content.
 
@@ -147,8 +173,8 @@ good enough, even though looping in cue like this does not feel very elegant.
 
 While most of this will work on any k8s cluster, there are some assumptions:
 
-- We use azure istio addon for API gateway, and also istio authorizationpolicy for ingerss traffic
-- We use clilium for traffic encryption and l7 network policies for cluster egress and in-cluster traffic
+- We use azure istio addon for API gateway, and also istio authorizationpolicy for ingress traffic
+- We use cilium for traffic encryption and l7 network policies for cluster egress and in-cluster traffic
   - (but we want to use cilium for API gateway as well)
 - We use [azv2k8s](https://github.com/SparebankenVest/azure-key-vault-to-kubernetes)
   to sync platform related secrets. (e.g imagepullsecret)
@@ -156,7 +182,7 @@ While most of this will work on any k8s cluster, there are some assumptions:
   - Kargo ClusterPromotionTask which posts tags to a custom image pusher
   - Custom image pusher (e.g go app) which pushes these tags to a separate repository,
     and triggers hard-refresh on the associated argo application to invalidate cache
-  - Argo CMP plugin (bash script) which fetches tags from the separate repository and repleces references of `replacedbyargocmp` with the tag
+  - Argo CMP plugin (bash script) which fetches tags from the separate repository and replaces references of `replacedbyargocmp` with the tag
 - We use entraID roles in both argo and kargo RBAC, but any role ID provided by dex should work.
 - Github
 
@@ -172,7 +198,7 @@ has a lot of overlap with some other emerging tools like;
 But with the [launch of CUE labs](https://cue.dev/blog/announcing-cue-labs/)
 and with Kelsey Hightower as CUE labs advisor, CUE core is promised to be
 always open source, and from our point of view, also feature complete.
-Any further improvemets will only make our days even better.
+Any further improvements will only make our days even better.
 
 Some (maybe not so) hot takes about other tools:  
 Helm - Raw text templating on top of yaml is inherently a bad idea  

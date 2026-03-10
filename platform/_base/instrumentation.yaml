@@ -1,0 +1,18 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: instrumentation
+  namespace: ""
+spec:
+  dotnet: {}
+  exporter:
+    endpoint: http://otel-collector.observability.svc.cluster.local:4318
+  go: {}
+  nodejs: {}
+  propagators:
+    - tracecontext
+    - baggage
+  python: {}
+  sampler:
+    argument: "1"
+    type: parentbased_traceidratio

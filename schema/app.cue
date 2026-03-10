@@ -5,7 +5,7 @@ import (
 	cilium "github.com/kystverket/driftly/schema/crd/cilium/v2"
 	istio "github.com/kystverket/driftly/schema/crd/istio/v1"
 	autoscaling "github.com/kystverket/driftly/schema/crd/autoscaling/v2"
-	akv "github.com/kystverket/driftly/schema/crd/akv2k8s/v1"
+	// akv "github.com/kystverket/driftly/schema/crd/akv2k8s/v1"
 	"strings"
 	"net"
 )
@@ -17,27 +17,43 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 	// Base configuration for application 
 	config: {
 		// Team responsible for the application
-		team!: "teamFOO" | "teamBAR" | "fyr"
+		team!: matchN(1, _teams) | error("Team must be one of: \(_teams)")
+		_teams: [for t in #Organization.teams {t.name}]
 		// Deployment environment
-		env!: "dev" | "test" | "prod"
+		env!: matchN(1, _env) | error("env must be one of: \(_env)")
+		_env: ["dev", "test", "prod"]
+
 		// Service (usually git repo)
 		service!: string & _validKubernetesName
 		// App (usually the conatiner image built)
 		app!:  string & _validKubernetesName
 		image: string | *"ghcr.io/\(#Organization.owner.name)/\(service)/\(app)"
 		tag:   string | *"latest"
+		// Environment variables for app in key: value format
 		envVars?: [string]: string
+		// Environment variables injected from configmap or secret source
+		envFrom?: [string]: core.#EnvFromSource
 		port: int & >0 | *8080
 		type: *"deployment" | "job" | "cronJob"
 		ingress?: {
 			hostname: string & =~"^[a-z-]+.\(C.env).\(#Organization.domain)"
 			// whitelisting if only accessible for specific IPs
 			cidr: [...net.IPCIDR] | *[]
-			entraID: bool | *false
+			// Route traffic through an oauth2 proxy setup to allow kystverket.no accounts 
+			// User attributes will be passed as headers x-auth-request-email and x-auth-request-groups
+			entraID:      bool | *false
+			path:         string | *"/"
+			pathRewrite?: string | *"/"
 		}
-		managedIdentity:  bool | *false
-		createPullSecret: bool | *true
-		instrumentation?: "go" | "python" | "nodejs" | "dotnet"
+		// Create and mount an azure managaed identity for the workload
+		managedIdentity: bool | *false
+		// Mount image pull secret for kystverket ghcr images
+		imagePullSecret: {
+			mount: bool | *true
+		}
+		// Inject opentelemetry auto instrumetation for target language
+		// For apps already instrumented, and only OTEL env variables set, use 'sdk'
+		instrumentation?: "go" | "python" | "nodejs" | "dotnet" | "sdk"
 
 		// Promotion strategy for the application
 		// Manual: No promotion, tags must be specified in tag fields
@@ -53,10 +69,10 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 		}
 
 		command?: [...string]
-		envFrom?: [...core.#EnvFromSource]
 
-		//inbound from another app
+		//inbound from another app running on the same cluster
 		inboundAccess?: [...{
+			team!:    string & _validKubernetesName
 			service!: string & _validKubernetesName
 			app!:     string & _validKubernetesName
 			env:      "dev" | "test" | "prod" | *C.env
@@ -64,21 +80,22 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 		}]
 
 		//outbound to an external address
-
 		outboundAccess?: [...{
-			host?:        string & =~"^([a-zA-Z0-9.-]+)$"
-			hostPattern?: string & =~"^([a-zA-Z0-9.*-]+)$"
-			port:         string & =~"^[0-9]+$" | *"443"
+			host?:          string & =~"^([a-zA-Z0-9.-]+)$"
+			hostPattern?:   string & =~"^([a-zA-Z0-9.*-]+)$"
+			allowInternet?: bool | *false
+			port:           string & =~"^[0-9]+$" | *"443"
 
 			matchN(>=2, [
-				{host!: string},
-				{hostPattern!: string},
-				{port!: string},
-			]) | error("At least one of 'host' or 'hostPattern' must be specified")
+				{host: string},
+				{hostPattern: string},
+				{allowInternet: bool},
+				{port: string},
+			]) | error("At least one of 'host', 'hostPattern' or 'allowInternet' must be specified")
 		}]
 
 		replicas: {
-			min:                    int & >=1 | *1
+			min:                    int & <=10 | *1
 			max:                    int & >=min | *min
 			cpuThresholdPercentage: int & >0 & <=100 | *80
 		}
@@ -129,9 +146,11 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 						}]
 					}
 				}
-				imagePullSecrets: [{
-					name: imagePullSecret
-				}]
+				if C.imagePullSecret.mount {
+					imagePullSecrets: [{
+						name: imagePullSecret
+					}]
+				}
 				containers: [{
 					image: C.image + ":" + C.tag
 					name:  C.app
@@ -144,8 +163,9 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 							value: v
 						}]
 					}
+
 					if C.envFrom != _|_ {
-						envFrom: C.envFrom
+						envFrom: [for e in C.envFrom {e}]
 					}
 					if C.command != _|_ {
 						command: C.command
@@ -198,7 +218,9 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 	if C.ingress != _|_ {
 		ingress: {
 			httpRoute: #HTTPRoute & {
-				metadata: #Base.Metadata
+				_path:        C.ingress.path
+				_pathRewrite: C.ingress.pathRewrite
+				metadata:     #Base.Metadata
 				spec: {
 					hostnames: [C.ingress.hostname]
 					rules: [{
@@ -232,14 +254,16 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 			istioWhitelistPolicy: istio.#AuthorizationPolicy & {
 				metadata: {
 					name:      #Base.Metadata.name + "-whitelist"
-					namespace: #Base.Metadata.namespace
+					namespace: #Organization.gateway.namespace
 					labels:    #Base.Metadata.labels
 				}
 				spec: {
 					action: "DENY"
 					rules: [{
 						to: [{
-							operation: hosts: [C.ingress.hostname + "/*"]
+							operation: hosts: [
+								C.ingress.hostname,
+							]
 						}]
 						from: [{
 							source: {
@@ -249,29 +273,6 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 							}
 						}]
 					}]
-				}
-			}
-		}
-	}
-	if C.createPullSecret {
-		pullsecret: akv.#AzureKeyVaultSecret & {
-			metadata: {
-				name:      #Base.imagePullSecret
-				namespace: #Base.Metadata.namespace
-				labels:    #Base.Labels
-			}
-			spec: {
-				vault: {
-					name: #Organization.vault
-					object: {
-						name: "akv-\(#Organization.pullSecret)"
-						type: "secret"
-					}
-				}
-				output: secret: {
-					name:    #Base.imagePullSecret
-					dataKey: ".dockerconfigjson"
-					type:    "kubernetes.io/dockerconfigjson"
 				}
 			}
 		}
@@ -337,6 +338,7 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 		#Base: PodTemplate: {
 			metadata: annotations: {
 				"instrumentation.opentelemetry.io/inject-\(C.instrumentation)": "true"
+				"resource.opentelemetry.io/service.team":                       C.team
 				"resource.opentelemetry.io/service.namespace":                  C.service
 				"resource.opentelemetry.io/service.name":                       C.app
 				"resource.opentelemetry.io/deployment.environment.name":        C.env
@@ -379,9 +381,10 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 					fromEndpoints: [{
 						{
 							matchLabels: {
-								service: r.service
-								app:     r.app
-								env:     r.env
+								service:                       r.service
+								app:                           r.app
+								env:                           r.env
+								"io.kubernetes.pod.namespace": "\(r.team)-\(r.env)-\(r.service)"
 							}
 						}
 					}]
@@ -413,20 +416,31 @@ _validKubernetesName: string & =~"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" & strings.Max
 				}
 				egress: [for r in C.outboundAccess {
 					{
-						toFQDNs: [
-							if r.host != _|_ {
-								{matchName: r.host}
-							},
-							if r.hostPattern != _|_ {
-								{matchPattern: r.hostPattern}
-							},
-						]
-						toPorts: [{
-							ports: [{
-								port: r.port
+						if r.host != _|_ || r.hostPattern != _|_ {
+							toFQDNs: [
+								if r.host != _|_ {
+									{matchName: r.host}
+								},
+								if r.hostPattern != _|_ {
+									{matchPattern: r.hostPattern}
+								},
+							]
+							toPorts: [{
+								ports: [{
+									port: r.port
+								}]
 							}]
-						}]
+						}
 					}
+					if r.allowInternet != _|_ {if r.allowInternet {
+						toEntities: ["world"]
+						// toServices: [{
+						// 	k8sService: {
+						// 		namespace: "aks-istio-ingress"
+						// 		serviceName:      "aks-istio-ingressgateway-external"
+						// 	}
+						// }]
+					}}
 				}]
 			}
 		}

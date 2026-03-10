@@ -6,4 +6,4 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
     kargo.akuity.io/description: Dev team access via Entra ID
-    rbac.kargo.akuity.io/claims: '{"groups":["aaaaa-bbbbb-cccc"]}'
+    rbac.kargo.akuity.io/claims: '{"groups":["aaaaaa-aaaa--aaaa-aaaaaaa"]}'

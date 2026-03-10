@@ -1,19 +1,41 @@
 package platform
 
-import apps "github.com/kystverket/driftly/platform/crd/argocd/v1alpha1"
+import (
+	apps "github.com/kystverket/driftly/platform/crd/argocd/v1alpha1"
+	akv2k8s "github.com/kystverket/driftly/platform/crd/akv2k8s/v1"
+	schema "github.com/kystverket/driftly/schema"
+	p "path"
+)
 
-import akv2k8s "github.com/kystverket/driftly/platform/crd/akv2k8s/v1"
+#Apps: {
+	let C = config
+	config: #App.config
 
-import schema "github.com/kystverket/driftly/schema"
-
-import p "path"
+	dev: #App & {
+		config: C
+		config: env: "dev"
+		...
+	}
+	test: #App & {
+		config: C
+		config: env: "test"
+		...
+	}
+	prod: #App & {
+		config: {
+			C
+			env: "prod"
+		}
+		...
+	}
+}
 
 // #App: apps.#ApplicationSet
 #App: {
-	let C = #Config
-	#Config: {
+	let C = config
+	config: {
 		team:  string
-		env:   "dev" | "test" | "prod"
+		env:   "dev" | "test" | "prod" | *""
 		kargo: bool | *true
 		roles: {
 			dev: {
@@ -44,6 +66,10 @@ import p "path"
 			}]
 			template: {
 				metadata: {
+					// We use the path extracted from the git directory generator to template name and namespace of the application
+					// path example with index:
+					// apps/_rendered/<TEAM>/<SERVICE>/<ENV>/<APP>
+					//  0      1       2       3       4      5
 					name: "{{index .path.segments 2}}-{{index .path.segments 4}}-{{index .path.segments 3}}-{{index .path.segments 5}}"
 					annotations: {
 						"argocd.argoproj.io/manifest-generate-paths": "."
@@ -54,7 +80,7 @@ import p "path"
 				}
 				spec: {
 					project: C.team + "-" + C.env
-					source: {
+					sources: [{
 						plugin: {
 							name: "kargo-cmp"
 							env: [{
@@ -65,8 +91,7 @@ import p "path"
 						repoURL:        "git@github.com:\(schema.#Organization.owner.name)/\(schema.#Organization.owner.repo).git"
 						targetRevision: "HEAD"
 						path:           "{{.path.path}}"
-						//directory: recurse: true
-					}
+					}]
 					destination: {
 						server:    "https://kubernetes.default.svc"
 						namespace: "{{index .path.segments 2}}-{{index .path.segments 4}}-{{index .path.segments 3}}"
@@ -289,27 +314,4 @@ import p "path"
 		}
 	}
 	...
-}
-
-#Apps: {
-	_config: #App.#Config
-
-	dev: #App & {
-		#Config: _config & {
-			env: "dev"
-		}
-		...
-	}
-	test?: #App & {
-		#Config: _config & {
-			env: "test"
-		}
-		...
-	}
-	prod?: #App & {
-		#Config: _config & {
-			env: "prod"
-		}
-		...
-	}
 }

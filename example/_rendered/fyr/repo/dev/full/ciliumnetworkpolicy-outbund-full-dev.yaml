@@ -1,0 +1,29 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: outbund-full-dev
+  namespace: fyr-dev-repo
+  labels:
+    service: repo
+    app: full
+    env: dev
+    team: fyr
+spec:
+  egress:
+    - toFQDNs:
+        - matchName: api.example.com
+      toPorts:
+        - ports:
+            - port: "443"
+    - toFQDNs:
+        - matchPattern: '*.example.com'
+      toPorts:
+        - ports:
+            - port: "443"
+    - toEntities:
+        - world
+  endpointSelector:
+    matchLabels:
+      service: repo
+      app: full
+      env: dev

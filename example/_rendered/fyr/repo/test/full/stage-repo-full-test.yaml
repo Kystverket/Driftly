@@ -1,0 +1,31 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  annotations:
+    kargo.akuity.io/color: yellow
+  labels:
+    stage: test
+  name: repo-full-test
+  namespace: fyr-kargo
+spec:
+  promotionTemplate:
+    spec:
+      steps:
+        - task:
+            kind: ClusterPromotionTask
+            name: push-image
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: repo-full
+      sources:
+        direct: false
+        stages:
+          - repo-full-dev
+  vars:
+    - name: path
+      value: _kargo/fyr/test/repo/full
+    - name: image
+      value: ghcr.io/kystverket/repo/example-frontend
+    - name: version
+      value: ${{imageFrom(vars.image).Tag}}

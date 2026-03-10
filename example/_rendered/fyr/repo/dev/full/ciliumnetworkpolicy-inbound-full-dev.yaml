@@ -1,0 +1,26 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: inbound-full-dev
+  namespace: fyr-dev-repo
+  labels:
+    service: repo
+    app: full
+    env: dev
+    team: fyr
+spec:
+  endpointSelector:
+    matchLabels:
+      service: repo
+      app: full
+      env: dev
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            service: otherservice
+            app: otherapp
+            env: dev
+            io.kubernetes.pod.namespace: fyr-dev-otherservice
+      toPorts:
+        - ports:
+            - port: "3000"

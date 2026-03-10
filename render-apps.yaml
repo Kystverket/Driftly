@@ -1,0 +1,35 @@
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'schema/**'
+permissions:
+  contents: write
+jobs:
+  # Check which chart renovate has updated, and download the new version
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: cue-lang/setup-cue@a93fa358375740cd8b0078f76355512b9208acb1 #v1.0.1
+      - name: render apps
+        # Fetch and render the new chart
+        run: |
+          ./render_x86_64
+      - name: push
+        run: |
+          cue fmt --files apps/
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+          git add apps/_rendered
+          # Only commit and push if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "(render): add changes"
+            git push
+          fi

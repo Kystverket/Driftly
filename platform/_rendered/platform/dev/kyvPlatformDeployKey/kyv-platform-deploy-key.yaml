@@ -1,0 +1,20 @@
+apiVersion: spv.no/v1
+kind: AzureKeyVaultSecret
+metadata:
+  name: kyv-platform-deploy-key
+  namespace: platform-kargo
+  labels:
+    kargo.akuity.io/cred-type: git
+  annotations:
+    kargo.akuity.io/description: kyv platform ssh deploy key
+spec:
+  output:
+    secret:
+      name: kyv-platform-deploy-key
+      type: Opaque
+  vault:
+    name: kv-corp-prod
+    object:
+      contentType: application/x-json
+      name: id-platform-private-kargo
+      type: multi-key-value-secret

@@ -1,5 +1,16 @@
 package schema
 
+#Role: {
+	entraName: string
+	entraID:   string
+	role:      "dev" | "admin"
+}
+
+#Team: {
+	name: string
+	roles: [...#Role]
+}
+
 #Organization: {
 	// Github organization
 	owner: {
@@ -17,4 +28,21 @@ package schema
 	observability: {
 		namespace: "observability"
 	}
+	teams: [...#Team] & [
+		{
+			name: "fyr"
+			roles: [
+				{
+					entraName: "aaaa"
+					entraID:   "aaaaaa-aaaa--aaaa-aaaaaaa"
+					role:      "dev"
+				},
+				{
+					entraName: "aaaa"
+					entraID:   "aaaaaa-aaaa--aaaa-aaaaaaa"
+					role:      "admin"
+				},
+			]
+		},
+	]
 }

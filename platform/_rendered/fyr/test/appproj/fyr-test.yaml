@@ -25,13 +25,13 @@ spec:
       kind: '*'
   roles:
     - groups:
-        - aaaaa-bbbbb-cccc
+        - aaaaaa-aaaa--aaaa-aaaaaaa
       name: dev
       policies:
         - p, proj:fyr-test:dev, applications, get, fyr-test/*, allow
         - p, proj:fyr-test:dev, logs, get, fyr-test/*, allow
     - groups:
-        - aaaaa-bbbbb-cccc
+        - aaaaaa-aaaa--aaaa-aaaaaaa
       name: admin
       policies:
         - p, proj:fyr-test:admin, applications, get, fyr-test/*, allow

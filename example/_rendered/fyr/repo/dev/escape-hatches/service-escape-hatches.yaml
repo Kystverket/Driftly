@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: repo
+    app: escape-hatches
+    env: dev
+    team: fyr
+  name: escape-hatches
+  namespace: fyr-dev-repo
+spec:
+  ports:
+    - name: http-escape-hatches
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    service: repo
+    app: escape-hatches
+    env: dev
+    team: fyr
+  type: ClusterIP

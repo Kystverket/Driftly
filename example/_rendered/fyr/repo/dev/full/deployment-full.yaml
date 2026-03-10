@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: repo
+    app: full
+    env: dev
+    team: fyr
+  name: full
+  namespace: fyr-dev-repo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: repo
+      app: full
+      env: dev
+      team: fyr
+  template:
+    metadata:
+      annotations:
+        resource.opentelemetry.io/service.team: fyr
+        resource.opentelemetry.io/service.namespace: repo
+        resource.opentelemetry.io/service.name: full
+        resource.opentelemetry.io/deployment.environment.name: dev
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+      labels:
+        azure.workload.identity/use: "true"
+        service: repo
+        app: full
+        env: dev
+        team: fyr
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  service: repo
+                  app: full
+                  env: dev
+                  team: fyr
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - command:
+            - /app/entrypoint.sh
+          env:
+            - name: API_ENDPOINT
+              value: http://backend:5000
+            - name: ENV
+              value: dev
+          image: ghcr.io/kystverket/repo/example-frontend:replacedbyargocmp
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /isalive
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 1
+          name: full
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /isready
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 1
+          resources:
+            limits:
+              ephemeral-storage: 64Mi
+            requests:
+              ephemeral-storage: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 10002
+            runAsNonRoot: true
+            runAsUser: 10002
+            seccompProfile:
+              type: RuntimeDefault
+      imagePullSecrets:
+        - name: corp-pull
+      securityContext:
+        fsGroup: 10002
+        runAsGroup: 10002
+        runAsNonRoot: true
+        runAsUser: 10002
+      serviceAccountName: full
